@@ -1,0 +1,169 @@
+# Copy to io.yaml and set service credentials.
+# NewBee {{SERVICE_NAME_UPPER}} API Service Configuration
+Name: {{SERVICE_NAME}}.api
+Host: 0.0.0.0
+Port: {{API_PORT}}
+Timeout: 60000
+
+# Auth Configuration moved to Middleware section for centralized management
+
+Log:
+  ServiceName: {{SERVICE_NAME}}ApiLogger
+  Mode: console
+  Path: /home/data/logs/{{SERVICE_NAME}}/api
+  Level: info
+  Compress: false
+  KeepDays: 7
+  StackCoolDownMillis: 100
+
+# Database Configuration | 数据库配置
+DatabaseConf:
+  Type: mysql
+  Host: 192.168.26.130
+  Port: 3306
+  DBName: {{DATABASE_NAME}}
+  Username: root # set your username
+  Password: "${SERVICE_PASSWORD}"
+  MaxOpenConn: 100
+  MaxIdleConn: 25
+  MaxLifetime: 3600
+  MaxIdleTime: 1800
+  SSLMode: disable
+  CacheTime: 5
+
+# Redis Configuration | Redis配置
+RedisConf:
+  Host: 192.168.26.130:6380
+  Db: 0
+
+CoreRpc:
+  Target: 127.0.0.1:9101
+  Enabled: true
+  Timeout: 8000
+  PoolSize: 10
+  MaxIdleConns: 5
+
+
+I18nConf:
+  Dir: # set the path of locale if you need to load files
+
+CROSConf:
+  Address: '*'    # if it is *, allow all ip and address. e.g. http://example.com
+
+# Casbin Configuration | Casbin权限配置
+CasbinConf:
+  ModelText: |
+    [request_definition]
+    r = sub, obj, act
+
+    [policy_definition]
+    p = sub, obj, act
+
+    [role_definition]
+    g = _, _
+
+    [policy_effect]
+    e = some(where (p.eft == allow))
+
+    [matchers]
+    m = r.sub == p.sub && keyMatch2(r.obj,p.obj) && r.act == p.act
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: {{PROMETHEUS_API_PORT}}
+  Path: /metrics
+
+# Middleware Configuration: Central control for the new middleware framework
+Middleware:
+  auth:
+    accessSecret: "${SERVICE_ACCESSSECRET}"
+    accessExpire: 86400 # 24 hours
+    enabled: true
+    skipPaths:
+      - /{{SERVICE_NAME}}/init/database
+      - /captcha
+      - /captcha/email
+      - /captcha/sms
+      - /oauth/login
+      - /oauth/login/callback
+      - /oauth/callback
+      - /oauth/providers
+      - /auth/login
+      - /user/login
+      - /user/logout
+      - /auth/tenant/list
+      - /user/login_by_email
+      - /user/login_by_sms
+      - /user/register
+      - /user/register_by_email
+      - /user/register_by_sms
+      - /user/reset_password_by_email
+      - /user/reset_password_by_sms
+  audit:
+    enabled: true
+    realIpHeader: X-Forwarded-For # 参考 docs/COMMON_AUDIT_MIDDLEWARE_GUIDE.md
+    captureResponseBody: true
+    skipPaths:
+      - /{{SERVICE_NAME}}/init/database
+      - /captcha
+      - /captcha/email
+      - /captcha/sms
+      - /oauth/login
+      - /oauth/login/callback
+      - /oauth/callback
+      - /oauth/providers
+      - /auth/login
+      - /auth/tenant/list
+      - /user/login
+      - /user/logout
+      - /user/login_by_email
+      - /user/login_by_sms
+      - /user/register
+      - /user/register_by_email
+      - /user/register_by_sms
+      - /user/reset_password_by_email
+      - /user/reset_password_by_sms
+  tenantCheck:
+    enabled: true
+    skipPaths:
+      - /{{SERVICE_NAME}}/init/database
+      - /captcha
+      - /captcha/email
+      - /captcha/sms
+      - /oauth/login
+      - /oauth/login/callback
+      - /oauth/callback
+      - /oauth/providers
+      - /auth/login
+      - /auth/tenant/list
+      - /user/login
+      - /user/logout
+      - /user/login_by_email
+      - /user/login_by_sms
+      - /user/register
+      - /user/register_by_email
+      - /user/register_by_sms
+      - /user/reset_password_by_email
+      - /user/reset_password_by_sms
+  dataPerm:
+    enabled: true
+    skipPaths:
+      - /{{SERVICE_NAME}}/init/database
+      - /captcha
+      - /captcha/email
+      - /captcha/sms
+      - /oauth/login
+      - /oauth/login/callback
+      - /oauth/callback
+      - /oauth/providers
+      - /auth/login
+      - /auth/tenant/list
+      - /user/login
+      - /user/logout
+      - /user/login_by_email
+      - /user/login_by_sms
+      - /user/register
+      - /user/register_by_email
+      - /user/register_by_sms
+      - /user/reset_password_by_email
+      - /user/reset_password_by_sms

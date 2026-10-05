@@ -1,0 +1,50 @@
+# Copy to io.yaml and set service credentials.
+Name: {{SERVICE_NAME}}.rpc
+ListenOn: 0.0.0.0:{{RPC_PORT}}
+Timeout: 30000
+
+DatabaseConf:
+  Type: mysql
+  Host: 192.168.26.130
+  Port: 3306
+  DBName: {{DATABASE_NAME}}
+  Username: root # set your username
+  Password: "${SERVICE_PASSWORD}"
+  MaxOpenConn: 50
+  MaxIdleConn: 20
+  MaxLifetime: 1800
+  MaxIdleTime: 900
+  SSLMode: disable
+  CacheTime: 5
+
+RedisConf:
+  Host: 192.168.26.130:6380
+  Type: node
+
+Log:
+  ServiceName: {{SERVICE_NAME}}RpcLogger
+  Mode: console
+  Path: /home/data/logs/{{SERVICE_NAME}}/rpc
+  Encoding: plain
+  Level: info
+  Compress: false
+  KeepDays: 7
+  StackCoolDownMillis: 100
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: {{PROMETHEUS_RPC_PORT}}
+  Path: /metrics
+
+CasbinConf:
+  ModelText: |
+    [request_definition]
+    r = sub, obj, act
+    [policy_definition]
+    p = sub, obj, act
+    [role_definition]
+    g = _, _
+    [policy_effect]
+    e = some(where (p.eft == allow))
+    [matchers]
+    m = r.sub == p.sub && keyMatch2(r.obj,p.obj) && r.act == p.act
